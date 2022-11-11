@@ -1,4 +1,6 @@
-import os, hashlib, time
+import hashlib
+import os
+import time
 
 
 def main():
@@ -10,14 +12,20 @@ def main():
               f'2) - Begin monitoring files\n'
               f'3) - Change directory\n'
               f'-------')
-        userChoice = input('Please enter your choice: ')
-        if userChoice == '1':
-            baseStr = read_hash(path)
-            write_base(path, baseStr)
-        elif userChoice == '2':
-            baseDict = read_base(path)
-            verify(path, baseDict)
-        elif userChoice == '3':
+        user_choice = input('Please enter your choice: ')
+        if user_choice == '1':
+            base_str = read_hash(path)
+            if len(base_str) == 0:      # When there are no files in path, re-prompt for new directory
+                print(f'\n{path} directory is empty.\nPlease change the directory'
+                      f' to a different path. \n')
+                continue
+            write_base(path, base_str)
+        elif user_choice == '2':
+            base_dict = read_base(path)
+            if len(base_dict) == 0:         # If dictionary is returned empty, re-prompt user
+                continue
+            verify(path, base_dict)
+        elif user_choice == '3':
             path = directory_set()
         else:
             print('Invalid input, please try again.')
@@ -33,45 +41,53 @@ def directory_set():    # Prompt user for Directory. Repeat if non-existent
 
 
 def read_hash(path):    # Open every file in directory, hash contents, add to dictionary
-    baseStr = ''
+    base_str = ''
     for file in os.listdir(path):   # Iterate through each file
-        digest = hashlib.sha256()   # Create object with SHA-256 hash algo
-        with open(f'{path}\\{file}', 'rb') as checkFile:
-            fileContent = checkFile.read()  # Read contents into string
-            digest.update(fileContent)      # Add string to digest
-            baseStr += file + '|' + digest.hexdigest() + '\n'   # append file/hash pair to new string
-    return baseStr
+        try:
+            digest = hashlib.sha256()   # Create object with SHA-256 hash algo
+            with open(f'{path}\\{file}', 'rb') as check_file:
+                file_content = check_file.read()  # Read contents into string
+                digest.update(file_content)      # Add string to digest
+                base_str += file + '|' + digest.hexdigest() + '\n'   # append file/hash pair to new string
+        except PermissionError:     # Skip attempting to digest subdirectories
+            pass
+
+    return base_str
 
 
-def write_base(path, baseStr):     # Writes the baseline file/hash pairs to baseline.txt
-    with open (f'{path}\\baseline.txt', 'w') as baseFile:
-        baseFile.write(baseStr)
+def write_base(path, base_str):     # Writes the baseline file/hash pairs to baseline.txt
+    with open(f'{path}\\baseline.txt', 'w') as baseFile:
+        baseFile.write(base_str)
 
 
 def read_base(path):     # Reads baseline.txt, splits line by seperator, adds pairs to dictionary
-    baseDict = {}
-    with open (f'{path}\\baseline.txt', 'r') as baseFile:
-        for line in baseFile:
-            baseStr = line.strip()
-            baseList = baseStr.split('|')
-            baseDict[baseList[0]] = baseList[1]
-        return baseDict
+    base_dict = {}
+    try:
+        with open(f'{path}\\baseline.txt', 'r') as base_file:
+            for line in base_file:
+                base_str = line.strip()
+                base_list = base_str.split('|')
+                base_dict[base_list[0]] = base_list[1]
+    except FileNotFoundError:       # Catches error if baseline does not exist. dictionary will return empty
+        print('Baseline file not found in directory. Please create new baseline or change your directory.')
+    return base_dict
 
 
-def verify(path, baseDict):
-    verifyDict = {}
-    baseDict.pop('baseline.txt')    # Remove baseline.txt k/v pair from base dictionary
+def verify(path, base_dict):
+    verify_dict = {}
+    base_dict.pop('baseline.txt')    # Remove baseline.txt k/v pair from base dictionary
     while True:
         time.sleep(5)       # Repeat loop every 5 seconds
-        verifyStr = read_hash(path)     # Hash files in directory
-        verifyList = verifyStr.splitlines()
-        for pair in verifyList:     # Iterate through list, split by seperator, add pairs to dictionary
-            verifyPair = pair.split('|')
-            verifyDict[verifyPair[0]] = verifyPair[1]
-        verifyDict.pop('baseline.txt')      # Remove baseline.txt k/v pair from verify dictionary
-        if baseDict == verifyDict:
+        verify_str = read_hash(path)     # Hash files in directory
+        verify_list = verify_str.splitlines()
+        for pair in verify_list:     # Iterate through list, split by seperator, add pairs to dictionary
+            verify_pair = pair.split('|')
+            verify_dict[verify_pair[0]] = verify_pair[1]
+        verify_dict.pop('baseline.txt')      # Remove baseline.txt k/v pair from verify dictionary
+        if base_dict == verify_dict:
             print('All good here, folks.')
         else:
             print('ERROR! FILE HAS CHANGED!')
+
 
 main()
