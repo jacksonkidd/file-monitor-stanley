@@ -9,8 +9,8 @@ Usage
     3. Choose one of the following options:
 
     ~ Create new baseline - This option will create a new baseline of file and checksum pairs for the specified directory.
-    ~ Begin monitoring files - This option will begin monitoring the specified directory for any changes to the files within it, and will alert the user if any changes         are detected.
+    ~ Begin monitoring files - This option will begin monitoring the specified directory for any changes to the files within it, and will alert the user if any changes are detected.
     ~ Change directory - This option allows the user to change the directory being monitored.
 
-    If you choose to create a new baseline, the program will generate a file named baseline.txt in the specified directory, containing the file and checksum pairs for       all files in the directory.
-    If you choose to monitor the files, the program will continuously monitor the specified directory for any changes to the files within it, and will alert the user if     any changes are detected.
+    If you choose to create a new baseline, the program will generate a file named baseline.txt in the specified directory, containing the file and checksum pairs for all files in the directory.
+    If you choose to monitor the files, the program will continuously monitor the specified directory for any changes to the files within it, and will alert the user if any changes are detected.
